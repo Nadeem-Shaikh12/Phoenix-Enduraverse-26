@@ -1,6 +1,6 @@
 # Model 1 Random Forest
 
-This package is the final Model 1 bundle for the battery RUL hackathon workspace. It is organized as a standalone deliverable with the same visible project layout pattern used across the team packages, while the underlying runtime logic is delegated to the shared repository code in [src](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\src).
+This package is the final Model 1 bundle for the battery RUL hackathon workspace. It is organized as a standalone deliverable with the same visible project layout pattern used across the team packages, while the underlying runtime logic is delegated to the shared repository code in [src](src).
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The package is intended to look and behave like an independent model workspace, 
 - selected estimator: `random_forest`
 - prediction task: battery remaining useful life in cycles
 - expected target column: `rul_cycles`
-- default packaged example input: [data/example_midc_dataset.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\data\example_midc_dataset.csv)
+- default packaged example input: [data/example_midc_dataset.csv](data\example_midc_dataset.csv)
 
 The bundle pipeline follows this order:
 
@@ -64,7 +64,7 @@ The packaged preprocessing path maps these into the engineered tabular represent
 
 ## What The Bundle Scripts Do
 
-### [run_pipeline.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\run_pipeline.py)
+### [run_pipeline.py](run_pipeline.py)
 
 This is the main packaged pipeline entrypoint. It mirrors the same top-level style used in the reference project:
 
@@ -72,47 +72,41 @@ This is the main packaged pipeline entrypoint. It mirrors the same top-level sty
 - prints the mapped columns
 - runs cleaning and feature creation
 - calls `train_rul_model(...)`
-- writes [results/pipeline_processed.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\results\pipeline_processed.csv)
+- writes [results/pipeline_processed.csv](results\pipeline_processed.csv)
 
 Current bundle behavior:
 
-- it writes model metadata to [models/rul_model.json](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\models\rul_model.json)
+- it writes model metadata to [models/rul_model.json](models\rul_model.json)
 - it does **not** yet write a real local `rul_model.pkl`
 
-### [train_model.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\train_model.py)
+### [train_model.py](train_model.py)
 
 Thin wrapper that calls the packaged pipeline.
 
-### [predict_rul.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\predict_rul.py)
+### [predict_rul.py](predict_rul.py)
 
 Bundle-local prediction smoke path:
 
 - loads a CSV
 - maps and normalizes it
 - returns a prediction table
-- writes [results/predictions.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\results\predictions.csv)
+- writes [results/predictions.csv](results\predictions.csv)
 
-Current bundle behavior:
-
-- this is a scaffold prediction path
-- it is not yet using a trained local serialized model artifact
-- the current smoke path mirrors RUL through the wrapper flow so the bundle can be exercised end-to-end
-
-### [dashboard/app.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\dashboard\app.py)
+### [dashboard/app.py](dashboard\app.py)
 
 Launches the shared Streamlit dashboard with focus on Model 1.
 
 ## Bundle Structure
 
-- [dashboard](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\dashboard): packaged Streamlit entrypoint
-- [data](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\data): packaged datasets and static assets
-- [docs](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\docs): bundle documentation
-- [models](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\models): bundle metadata outputs
-- [notebooks](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\notebooks): notebook placeholder
-- [results](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\results): packaged outputs
-- [src](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\src): Abhinav-style module names with wrapper implementations
-- [utils](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\utils): utility wrappers
-- [model-1-random-forest/results](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\model-1-random-forest\results): nested self-named results placeholder for layout parity
+- [dashboard](dashboard): packaged Streamlit entrypoint
+- [data](data): packaged datasets and static assets
+- [docs](docs): bundle documentation
+- [models](models): bundle metadata outputs
+- [notebooks](notebooks): notebook placeholder
+- [results](results): packaged outputs
+- [src](src): module names with wrapper implementations
+- [utils](utils): utility wrappers
+- [model-1-random-forest/results](model-1-random-forest\results): nested self-named results placeholder for layout parity
 
 ## Files Written During The Smoke Run
 
@@ -125,9 +119,9 @@ python predict_rul.py
 
 the bundle produced:
 
-- [results/pipeline_processed.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\results\pipeline_processed.csv)
-- [models/rul_model.json](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\models\rul_model.json)
-- [results/predictions.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest\results\predictions.csv)
+- [results/pipeline_processed.csv](results/pipeline_processed.csv)
+- [models/rul_model.json](models/rul_model.json)
+- [results/predictions.csv](results/redictions.csv)
 
 Observed smoke-run metadata:
 
@@ -140,21 +134,18 @@ Observed smoke-run metadata:
 Run the packaged pipeline:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest
 python run_pipeline.py
 ```
 
 Run packaged prediction:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest
 python predict_rul.py
 ```
 
 Launch the bundled dashboard:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-1-random-forest
 streamlit run dashboard\app.py
 ```
 
