@@ -1,6 +1,6 @@
 # Model 2 Hist Gradient Boosting
 
-This package is the final Model 2 bundle for the battery RUL hackathon workspace. It is organized as a standalone deliverable with the same visible project layout pattern used across the team packages, while the underlying runtime logic is delegated to the shared repository code in [src](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\src).
+This package is the final Model 2 bundle for the battery RUL hackathon workspace. It is organized as a standalone deliverable with the same visible project layout pattern used across the team packages, while the underlying runtime logic is delegated to the shared repository code in [src](src).
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The package is intended to look and behave like an independent model workspace, 
 - selected estimator: `hist_gradient_boosting`
 - prediction task: battery remaining useful life in cycles
 - expected target column: `rul_cycles`
-- default packaged example input: [data/example_midc_dataset.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\data\example_midc_dataset.csv)
+- default packaged example input: [data/example_midc_dataset.csv](data/example_midc_dataset.csv)
 
 The bundle pipeline follows this order:
 
@@ -67,7 +67,7 @@ The packaged preprocessing path maps these into the normalized representation us
 
 ## What The Bundle Scripts Do
 
-### [run_pipeline.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\run_pipeline.py)
+### [run_pipeline.py](run_pipeline.py)
 
 This is the main packaged pipeline entrypoint. It mirrors the same top-level style used in the reference project:
 
@@ -75,25 +75,25 @@ This is the main packaged pipeline entrypoint. It mirrors the same top-level sty
 - prints the mapped columns
 - runs cleaning and feature creation
 - calls `train_rul_model(...)`
-- writes [results/pipeline_processed.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\results\pipeline_processed.csv)
+- writes [results/pipeline_processed.csv](results/pipeline_processed.csv)
 
 Current bundle behavior:
 
-- it writes model metadata to [models/rul_model.json](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\models\rul_model.json)
+- it writes model metadata to [models/rul_model.json](models/rul_model.json)
 - it does **not** yet write a real local `rul_model.pkl`
 
-### [train_model.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\train_model.py)
+### [train_model.py](train_model.py)
 
 Thin wrapper that calls the packaged pipeline.
 
-### [predict_rul.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\predict_rul.py)
+### [predict_rul.py](predict_rul.py)
 
 Bundle-local prediction smoke path:
 
 - loads a CSV
 - maps and normalizes it
 - returns a prediction table
-- writes [results/predictions.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\results\predictions.csv)
+- writes [results/predictions.csv](results/predictions.csv)
 
 Current bundle behavior:
 
@@ -101,21 +101,21 @@ Current bundle behavior:
 - it is not yet using a trained local serialized model artifact
 - the current smoke path mirrors RUL through the wrapper flow so the bundle can be exercised end-to-end
 
-### [dashboard/app.py](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\dashboard\app.py)
+### [dashboard/app.py](dashboard/app.py)
 
 Launches the shared Streamlit dashboard with focus on Model 2.
 
 ## Bundle Structure
 
-- [dashboard](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\dashboard): packaged Streamlit entrypoint
-- [data](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\data): packaged datasets and static assets
-- [docs](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\docs): bundle documentation
-- [models](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\models): bundle metadata outputs
-- [notebooks](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\notebooks): notebook placeholder
-- [results](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\results): packaged outputs
-- [src](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\src): Abhinav-style module names with wrapper implementations
-- [utils](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\utils): utility wrappers
-- [model-2-hist-gradient-boosting/results](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\model-2-hist-gradient-boosting\results): nested self-named results placeholder for layout parity
+- [dashboard](dashboard): packaged Streamlit entrypoint
+- [data](data): packaged datasets and static assets
+- [docs](docs): bundle documentation
+- [models](models): bundle metadata outputs
+- [notebooks](notebooks): notebook placeholder
+- [results](results): packaged outputs
+- [src](src): module names with wrapper implementations
+- [utils](utils): utility wrappers
+- [model-2-hist-gradient-boosting/results](model-2-hist-gradient-boosting/results): nested self-named results placeholder for layout parity
 
 ## Files Written During The Smoke Run
 
@@ -128,9 +128,9 @@ python predict_rul.py
 
 the bundle produced:
 
-- [results/pipeline_processed.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\results\pipeline_processed.csv)
-- [models/rul_model.json](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\models\rul_model.json)
-- [results/predictions.csv](C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting\results\predictions.csv)
+- [results/pipeline_processed.csv](results/pipeline_processed.csv)
+- [models/rul_model.json](models/rul_model.json)
+- [results/predictions.csv](results/predictions.csv)
 
 Observed smoke-run metadata:
 
@@ -143,22 +143,19 @@ Observed smoke-run metadata:
 Run the packaged pipeline:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting
 python run_pipeline.py
 ```
 
 Run packaged prediction:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting
 python predict_rul.py
 ```
 
 Launch the bundled dashboard:
 
 ```powershell
-cd C:\Users\Saarthak\Downloads\DataHack\NASA-Battery-DataSet\model-2-hist-gradient-boosting
-streamlit run dashboard\app.py
+streamlit run dashboard/app.py
 ```
 
 ## Current Limitations
