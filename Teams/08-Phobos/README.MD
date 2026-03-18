@@ -21,7 +21,7 @@ To address this problem, we developed a "Smart Fault Detection Glasses" using Ra
 
 ## 🏗️ High-Level Architecture
 
-![High-Level Architecture](./Teams/08-Phobos/assests/High-Level%20Architecture.jpeg)
+![High-Level Architecture](.assests/High-Level%20Architecture.jpeg)
 
 ## Project Structure:
 
