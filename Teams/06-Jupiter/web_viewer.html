@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamVision Web Live Feed</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --text: #f8fafc;
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .video-wrapper {
+            flex: 1;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--panel);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 480px;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--panel);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .stat-label { color: #94a3b8; }
+        .stat-value { font-weight: 600; font-family: monospace; font-size: 1.2rem; }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .badge.ok { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge.warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge.nok { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge.offline { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--success);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:hover { opacity: 0.9; }
+        .btn.stop { background: var(--danger); }
+
+        #overlay-msg {
+            position: absolute;
+            font-size: 1.5rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>DreamVision Real-Time Sensor UI</h1>
+    
+    <div class="container">
+        <!-- Live Video Canvas -->
+        <div class="video-wrapper">
+            <div id="overlay-msg">Click 'Connect Stream' to begin</div>
+            <canvas id="videoCanvas"></canvas>
+        </div>
+
+        <!-- Telemetry Sidebar -->
+        <div class="sidebar">
+            <div class="card">
+                <h3>MLX90614 Telemetry</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Object Temp:</span>
+                    <span class="stat-value" id="lbl-obj">-- °C</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ambient Temp:</span>
+                    <span class="stat-value" id="lbl-amb">-- °C</span>
+                </div>
+                <div class="stat-row" style="margin-top: 1rem; align-items: center;">
+                    <span class="stat-label">System Status:</span>
+                    <span class="badge offline" id="lbl-status">OFFLINE</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Controls</h3>
+                <input type="text" id="streamUrl" value="http://10.37.50.209/stream" 
+                       style="width:100%; padding:0.75rem; margin-bottom:1rem; border-radius:6px; border:1px solid #475569; background:#0f172a; color:white;"/>
+                <button id="toggleBtn" class="btn" onclick="toggleStream()">Connect Stream</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const overlayMsg = document.getElementById('overlay-msg');
+        const toggleBtn = document.getElementById('toggleBtn');
+        
+        const lblObj = document.getElementById('lbl-obj');
+        const lblAmb = document.getElementById('lbl-amb');
+        const lblStatus = document.getElementById('lbl-status');
+
+        let isStreaming = false;
+        let reader = null;
+        let abortController = null;
+
+        async function toggleStream() {
+            if (isStreaming) {
+                stopStream();
+            } else {
+                startStream();
+            }
+        }
+
+        function stopStream() {
+            isStreaming = false;
+            toggleBtn.innerText = "Connect Stream";
+            toggleBtn.classList.remove('stop');
+            overlayMsg.style.display = 'block';
+            overlayMsg.innerText = "Stream Disconnected";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateBadge("OFFLINE");
+            
+            if (abortController) {
+                abortController.abort();
+            }
+        }
+
+        function updateBadge(statusData) {
+            lblStatus.innerText = statusData;
+            lblStatus.className = 'badge';
+            if (statusData === 'OK') lblStatus.classList.add('ok');
+            else if (statusData === 'WARNING') lblStatus.classList.add('warning');
+            else if (statusData === 'NOK') lblStatus.classList.add('nok');
+            else lblStatus.classList.add('offline');
+        }
+
+        function indexOfSequence(haystack, needle, offset = 0) {
+            for (let i = offset; i <= haystack.length - needle.length; i++) {
+                let found = true;
+                for (let j = 0; j < needle.length; j++) {
+                    if (haystack[i + j] !== needle[j]) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) return i;
+            }
+            return -1;
+        }
+
+        async function startStream() {
+            const url = document.getElementById('streamUrl').value;
+            isStreaming = true;
+            toggleBtn.innerText = "Stop Stream";
+            toggleBtn.classList.add('stop');
+            overlayMsg.innerText = "Connecting...";
+            
+            abortController = new AbortController();
+
+            try {
+                const response = await fetch(url, { signal: abortController.signal });
+                
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                overlayMsg.style.display = 'none';
+                reader = response.body.getReader();
+                let buffer = new Uint8Array(0);
+
+                while (isStreaming) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const newBuffer = new Uint8Array(buffer.length + value.length);
+                    newBuffer.set(buffer);
+                    newBuffer.set(value, buffer.length);
+                    buffer = newBuffer;
+
+                    while (true) {
+                        const boundaryBytes = new TextEncoder().encode("--jpgboundary\r\n");
+                        let startIdx = indexOfSequence(buffer, boundaryBytes);
+                        if (startIdx === -1) break;
+
+                        const headerEndBytes = new TextEncoder().encode("\r\n\r\n");
+                        let headerEndIdx = indexOfSequence(buffer, headerEndBytes, startIdx);
+                        if (headerEndIdx === -1) break;
+
+                        const headerBlock = new TextDecoder().decode(buffer.slice(startIdx, headerEndIdx));
+                        
+                        let contentLength = 0;
+                        let objTemp = "--", ambTemp = "--", status = "--";
+                        
+                        const lines = headerBlock.split('\r\n');
+                        for (let line of lines) {
+                            if (line.toLowerCase().startsWith('content-length:')) {
+                                contentLength = parseInt(line.split(':')[1].trim());
+                            }
+                            if (line.toUpperCase().startsWith('X-OBJECT-TEMP:')) objTemp = line.split(':')[1].trim();
+                            if (line.toUpperCase().startsWith('X-AMBIENT-TEMP:')) ambTemp = line.split(':')[1].trim();
+                            if (line.toUpperCase().startsWith('X-TEMP-STATUS:')) status = line.split(':')[1].trim();
+                        }
+
+                        if (contentLength === 0 || isNaN(contentLength)) {
+                            buffer = buffer.slice(headerEndIdx + 4);
+                            continue;
+                        }
+
+                        const jpegStart = headerEndIdx + 4;
+                        const jpegEnd = jpegStart + contentLength;
+
+                        if (buffer.length < jpegEnd) {
+                            break; // Not enough data for the full JPEG
+                        }
+
+                        const jpegData = buffer.slice(jpegStart, jpegEnd);
+                        buffer = buffer.slice(jpegEnd); // advance buffer
+
+                        renderFrame(jpegData, objTemp, ambTemp, status);
+                    }
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error("Stream error:", err);
+                    overlayMsg.style.display = 'block';
+                    overlayMsg.innerText = "Error: " + err.message;
+                }
+                stopStream();
+            }
+        }
+
+        function renderFrame(jpegBytes, objTemp, ambTemp, status) {
+            const blob = new Blob([jpegBytes], { type: 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                try {
+                    // Computer Vision: Find Hotspot (fast scan every 4th pixel for performance)
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imgData.data;
+                    let maxBright = -1;
+                    let maxX = 0, maxY = 0;
+                    
+                    for (let y = 0; y < canvas.height; y += 4) {
+                        for (let x = 0; x < canvas.width; x += 4) {
+                            const idx = (y * canvas.width + x) * 4;
+                            const r = data[idx];
+                            const g = data[idx+1];
+                            const b = data[idx+2];
+                            const brightness = r + g + b;
+                            
+                            if (brightness > maxBright) {
+                                maxBright = brightness;
+                                maxX = x;
+                                maxY = y;
+                            }
+                        }
+                    }
+                    
+                    // Draw Hotspot Bounding Box / Crosshair
+                    ctx.strokeStyle = '#ef4444'; 
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(maxX, maxY, Math.max(20, canvas.width * 0.05), 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    // Draw Crosshairs
+                    ctx.beginPath();
+                    ctx.moveTo(maxX - 40, maxY);
+                    ctx.lineTo(maxX + 40, maxY);
+                    ctx.moveTo(maxX, maxY - 40);
+                    ctx.lineTo(maxX, maxY + 40);
+                    ctx.stroke();
+                    
+                    // Shadow for text readability
+                    ctx.fillStyle = 'black';
+                    ctx.font = 'bold 22px Arial';
+                    ctx.fillText(`HOTSPOT: ${objTemp}°C`, maxX + 27, maxY - 23);
+                    
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText(`HOTSPOT: ${objTemp}°C`, maxX + 25, maxY - 25);
+                    
+                    // Update DOM metrics
+                    if(objTemp !== "--") lblObj.innerText = `${objTemp} °C`;
+                    if(ambTemp !== "--") lblAmb.innerText = `${ambTemp} °C`;
+                    if(status !== "--") updateBadge(status);
+
+                } catch (e) {
+                    console.error("Canvas draw error", e);
+                }
+
+                URL.revokeObjectURL(url);
+            };
+            
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+    </script>
+</body>
+</html>
